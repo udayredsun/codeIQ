@@ -1,0 +1,121 @@
+<div>
+  <h3 class="hader"><b>CodeIQ Tool with OpenAI Api</b></h3>
+</div>
+<hr>
+</hr>
+<div class="container">
+  <div class="input-div">
+      <label class="hader"><b>Select code analysis options</b></label>
+      <div>
+          <input type="checkbox" id="review1" name="chkStandard" value="standard">
+          <label for="review1"> Functional Review</label><br>
+          <input type="checkbox" id="review2" name="chkPerformance" value="performance">
+          <label for="review2"> Performance Review</label><br>
+          <input type="checkbox" id="review3" name="chkDocument" value="document">
+          <label for="review3"> Documentation Review</label><br>
+          <input type="checkbox" id="review4" name="chkMaintain" value="maintain">
+          <label for="review4"> Maintainability Review</label><br>
+          <input type="checkbox" id="review5" name="chkTesting" value="testing">
+          <label for="review5"> Testing and Testability Review</label><br>
+          <input type="checkbox" id="review6" name="chkConcurrency" value="concurrency">
+          <label for="review6"> Concurrency and Thread Safety Review</label><br>
+          <input type="checkbox" id="review7" name="chkDependency" value="dependency">
+          <label for="review7"> Code Dependency and Integration Review</label><br>
+          <input type="checkbox" id="review8" name="chkError" value="error">
+          <label for="review8"> Error Handling and Exception Review</label><br>
+          <input type="checkbox" id="review9" name="chkCodeSmell" value="codesmell">
+          <label for="review9"> Code Smell Review</label><br>
+          <input type="checkbox" id="review10" name="chkCompliance" value="compliance">
+          <label for="review10"> Compliance Review</label><br>
+      </div>
+      <div class="div-col">
+          <label style="color: blue;"><b>Paste code snippet to anlayse</b></label>
+          <textarea name="txtCodeSnippet" cols="50" rows="20"></textarea>
+          <label style="color: blue;"><b>Upload code file(s)</b></label>
+          <input type="file"/>
+      </div>
+      <div style="margin-top:8px;border: 1px blue solid; padding: 2px;">
+          <button onclick="submit()">Analyze</button>
+          <button>Clear</button>
+          <button onclick="closeTab()">Close </button>
+      </div>
+  </div>
+  <div class="outpu-div">
+    <label style="color: blue;"><b>Ouput results</b></label>
+    <textarea name="txtCodeSnippet" cols="70" rows="41"></textarea>
+  </div>
+</div>
+
+<style>
+  .hader {
+      text-align: center;
+      color: blue
+  }
+
+  .container {
+      display: flex;
+      flex-direction: row;
+  }
+
+  .div-col {
+      margin-top: 5px;
+      display: flex;
+      flex-direction: column;
+  }
+
+  .input-div,
+  .outpu-div {
+      min-width: 50%
+  }
+  .outpu-div{
+      margin-left: 5px;
+  }
+</style>
+
+<script>
+const callbackStack = [];
+const vscode = acquireVsCodeApi();
+function command(cmd, callback) {
+  if (!cmd) {
+    return;
+  }
+  let args = Array.from(arguments);
+  if (typeof args[args.length - 1] === 'function') {
+    callback = args[args.length - 1];
+    args.length = args.length - 1;
+  } else {
+    callback = undefined;
+  }
+  args.shift();
+  const messageId = new Date().getTime() + Math.random();
+  
+  callbackStack.push({
+    messageId,
+    callback
+  });
+  vscode.postMessage({
+    messageId,
+    command: cmd,
+    parameter: args
+  });
+}
+window.addEventListener('message', event => {
+  const message = event.data;
+  for (let index = 0; index < callbackStack.length; index++) {
+    const callbackItem = callbackStack[index];
+    if (callbackItem.messageId === message.messageId) {
+      if (callbackItem.callback) {
+        callbackItem.callback(message.payload);
+      }
+      callbackStack.splice(index, 1);
+      break;
+    }
+  }
+});
+function submit() {
+  command('extension.submit');
+}
+function closeTab() {
+  command('extension.vscexpressclose', 'index.html');
+}
+</script>
