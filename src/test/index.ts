@@ -20,3 +20,5 @@ testRunner.configure({
 });
 
 module.exports = testRunner;
+
+//code is not needed for QA test
