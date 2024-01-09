@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Prompt Page</title>
+</head>
+<body>
+
+    <h1>OpenAI Prompt Page</h1>
+
+    <label for="prompt">Enter your prompt:</label>
+    <input type="text" id="prompt" placeholder="Type your prompt here">
+    <button onclick="generateResponse()">Generate Response</button>
+
+    <h3>Response:</h3>
+    <p id="response"></p>
+
+    <script>
+        function generateResponse() {
+            const prompt = document.getElementById('prompt').value;
+
+            // Replace 'YOUR_API_KEY' with your actual OpenAI API key
+            const apiKey = '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';
+            
+            // Replace 'YOUR_MODEL_NAME' with the desired GPT-3 model (e.g., 'text-davinci-003')
+            const modelName = 'gpt-3.5-turbo';
+
+            // API endpoint for GPT-3
+            const apiUrl = 'https://api.openai.com/v1/chat/completions';
+
+            // Data to be sent in the request
+            const data = {
+                model: modelName,
+                messages: [{ role: "user", content: prompt }],
+                max_tokens: 150  // Adjust as needed
+            };
+
+            // Making a POST request to the OpenAI API
+            fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const responseElement = document.getElementById('response');
+                responseElement.textContent = data.choices[0].message.content;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+
+</body>
+</html>
