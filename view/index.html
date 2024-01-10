@@ -1,5 +1,5 @@
 <div>
-  <h3 class="hader"><b>CodeIQ Tool with OpenAI Api</b></h3>
+  <h3 class="hader"><b>CodeIQ Tool with OpenAI Api------</b></h3>
   <h3 class="hader"><b>Modified change for Header</b></h3>
 </div>
 <hr>
@@ -31,19 +31,19 @@
       </div>
       <div class="div-col">
           <label style="color: blue;"><b>Paste code snippet to anlayse</b></label>
-          <textarea name="txtCodeSnippet" cols="50" rows="20"></textarea>
+          <textarea id="txtCodeSnippet" cols="50" rows="20"></textarea>
           <label style="color: blue;"><b>Upload code file(s)</b></label>
           <input type="file"/>
       </div>
       <div style="margin-top:8px;border: 1px blue solid; padding: 2px;">
           <button onclick="submit()">Analyze</button>
-          <button>Clear</button>
+          <button onclick="clear()">Clear</button>
           <button onclick="closeTab()">Close </button>
       </div>
   </div>
   <div class="outpu-div">
     <label style="color: blue;"><b>Ouput results</b></label>
-    <textarea name="txtCodeSnippet" cols="70" rows="41"></textarea>
+    <textarea id="txtResult" cols="70" rows="41"></textarea>
   </div>
 </div>
 
@@ -113,10 +113,65 @@ window.addEventListener('message', event => {
     }
   }
 });
+
+//********** Submit to API******************
 function submit() {
-  command('extension.submit');
+  //command('extension.submit');
+  try{
+    const res = document.getElementById("txtResult");
+    res.innerText = "Start processing...";
+    generate();
+  }
+  catch(error){
+    resultText.innerText = stringify(error);
+  }
+}
+const generate = async () => {
+  const resultText = document.getElementById("txtResult");
+  const input = document.getElementById("txtCodeSnippet").value;
+  
+  try {
+    const API_URL = "https://api.openai.com/v1/chat/completions";
+    const API_KEY = "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";
+    controller = new AbortController();
+    const signal = controller.signal;
+
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: input }],
+        max_tokens: 1000,
+      
+      }),
+      signal,
+    });
+
+    // Read the response as a stream of data
+    const data = await response.json();
+    resultText.innerText = data.choices[0].message.content;;
+}
+catch (error) {
+    console.error("Error:", error);
+    resultText.innerText = "Error occurred while generating.";
+  } 
+};
+
+function clear(){
+  var outputText = document.getElementById("txtResult");
+  var inputText = document.getElementById("txtCodeSnippet");
+  outputText.reset();
+  inputText.reset();
 }
 function closeTab() {
   command('extension.vscexpressclose', 'index.html');
 }
+const API_URL = "https://api.openai.com/v1/chat/completions";
+const API_KEY = "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";
+
+
 </script>
